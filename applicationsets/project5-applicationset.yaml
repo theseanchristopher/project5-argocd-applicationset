@@ -24,10 +24,11 @@ spec:
         path: charts/app
         helm:
           releaseName: project5-{{name}}
-          # Optional: basic env-specific overrides inline
-          # parameters:
-          #   - name: env.name
-          #     value: "{{name}}"
+          parameters:
+            - name: image.repository
+              value: 349821334974.dkr.ecr.us-east-1.amazonaws.com/project1-nginx
+            - name: image.tag
+              value: cfddcc0d4c2a5798f529485c3b1cc575a82a791c 
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{namespace}}"
