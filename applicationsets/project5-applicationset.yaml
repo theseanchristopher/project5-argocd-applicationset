@@ -4,21 +4,49 @@ metadata:
   name: project5-environments
   namespace: argocd
 spec:
+  # Two generators:
+  # - one for dev (with auto-sync)
+  # - one for prod (manual sync)
   generators:
     - list:
         elements:
           - name: dev
             namespace: project5-dev
+        template:
+          # This template section *patches* the spec.template below,
+          # but only for the dev application(s).
+          spec:
+            syncPolicy:
+              automated:
+                prune: true
+                selfHeal: true
+              syncOptions:
+                - CreateNamespace=true
+
+    - list:
+        elements:
           - name: prod
             namespace: project5-prod
+        template:
+          # This template section *patches* the spec.template below,
+          # but only for the prod application(s).
+          # No "automated" block here -> prod stays manual.
+          spec:
+            syncPolicy:
+              syncOptions:
+                - CreateNamespace=true
+
+  # Base template shared by BOTH dev and prod.
   template:
     metadata:
+      # Each generated Application will be named:
+      #   project5-dev
+      #   project5-prod
       name: project5-{{name}}
     spec:
       project: default
       source:
-        # SSH access to the repo is not configured.
-        #repoURL: git@github.com:theseanchristopher/project4-helm-argo-gitops.git
+        # Project 4 Helm repo
         repoURL: https://github.com/theseanchristopher/project4-helm-argo-gitops.git
         targetRevision: project4-gitops
         path: charts/app
@@ -28,21 +56,10 @@ spec:
             - name: image.repository
               value: 349821334974.dkr.ecr.us-east-1.amazonaws.com/project1-nginx
             - name: image.tag
-              value: cfddcc0d4c2a5798f529485c3b1cc575a82a791c 
+              value: cfddcc0d4c2a5798f529485c3b1cc575a82a791c
             - name: replicaCount
               value: "1"
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{namespace}}"
-      syncPolicy:
-        # Automated sync only when syncPolicy == "automated"
-        {{- if eq .syncPolicy "automated" }}
-        automated:
-          prune: true
-          selfHeal: true
-        {{- end }}
-        syncOptions:
-          - CreateNamespace=true
-      # NOTE:
-      # We will control dev auto-sync vs prod manual-sync from the Argo CD UI.
-      # By default, Applications created by this template will be manual sync.
+
