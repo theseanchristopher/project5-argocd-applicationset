@@ -12,10 +12,13 @@ spec:
         elements:
           - name: dev
             namespace: project5-dev
+        # This template overrides/patches the base template *only* for dev.
         template:
-          # This template section *patches* the spec.template below,
-          # but only for the dev application(s).
+          metadata: {}
           spec:
+            project: default
+            destination: {}
+            source: {}
             syncPolicy:
               automated:
                 prune: true
@@ -27,11 +30,14 @@ spec:
         elements:
           - name: prod
             namespace: project5-prod
+        # This template overrides/patches the base template *only* for prod.
+        # No "automated" block here → prod stays manual.
         template:
-          # This template section *patches* the spec.template below,
-          # but only for the prod application(s).
-          # No "automated" block here -> prod stays manual.
+          metadata: {}
           spec:
+            project: default
+            destination: {}
+            source: {}
             syncPolicy:
               syncOptions:
                 - CreateNamespace=true
@@ -39,7 +45,7 @@ spec:
   # Base template shared by BOTH dev and prod.
   template:
     metadata:
-      # Each generated Application will be named:
+      # Generated Applications will be called:
       #   project5-dev
       #   project5-prod
       name: project5-{{name}}
@@ -62,4 +68,7 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{namespace}}"
-
+      # Default sync options (both envs get CreateNamespace=true; dev overrides further above)
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
