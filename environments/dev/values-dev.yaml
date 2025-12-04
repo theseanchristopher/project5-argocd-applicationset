@@ -1,0 +1,5 @@
+# Values for the dev environment
+replicaCount: 1
+
+env:
+  name: dev

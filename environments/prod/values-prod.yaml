@@ -1,0 +1,5 @@
+# Values for the prod environment
+replicaCount: 2
+
+env:
+  name: prod

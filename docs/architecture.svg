@@ -1,0 +1,7 @@
+<!-- Placeholder SVG. The real architecture diagram will be designed later. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400">
+  <rect x="10" y="10" width="780" height="380" fill="white" stroke="black"/>
+  <text x="50" y="100" font-family="Arial" font-size="20">
+    Project 5 – Architecture Diagram Placeholder
+  </text>
+</svg>
