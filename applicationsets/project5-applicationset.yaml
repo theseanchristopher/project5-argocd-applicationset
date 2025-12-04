@@ -1,70 +1,75 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: project5-environments
+  name: project5-dev
   namespace: argocd
 spec:
   generators:
-    # ---------- DEV (auto-sync) ----------
     - list:
         elements:
           - name: dev
             namespace: project5-dev
-        template:
-          metadata:
-            name: project5-dev
-          spec:
-            project: default
-            source:
-              repoURL: https://github.com/theseanchristopher/project4-helm-argo-gitops.git
-              targetRevision: project4-gitops
-              path: charts/app
-              helm:
-                releaseName: project5-dev
-                parameters:
-                  - name: image.repository
-                    value: 349821334974.dkr.ecr.us-east-1.amazonaws.com/project1-nginx
-                  - name: image.tag
-                    value: cfddcc0d4c2a5798f529485c3b1cc575a82a791c
-                  - name: replicaCount
-                    value: "1"
-            destination:
-              server: https://kubernetes.default.svc
-              namespace: project5-dev
-            syncPolicy:
-              automated:
-                prune: true
-                selfHeal: true
-              syncOptions:
-                - CreateNamespace=true
-
-    # ---------- PROD (manual sync) ----------
+  template:
+    metadata:
+      name: project5-dev
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/theseanchristopher/project4-helm-argo-gitops.git
+        targetRevision: project4-gitops
+        path: charts/app
+        helm:
+          releaseName: project5-dev
+          parameters:
+            - name: image.repository
+              value: 349821334974.dkr.ecr.us-east-1.amazonaws.com/project1-nginx
+            - name: image.tag
+              value: cfddcc0d4c2a5798f529485c3b1cc575a82a791c
+            - name: replicaCount
+              value: "1"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: project5-dev
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: project5-prod
+  namespace: argocd
+spec:
+  generators:
     - list:
         elements:
           - name: prod
             namespace: project5-prod
-        template:
-          metadata:
-            name: project5-prod
-          spec:
-            project: default
-            source:
-              repoURL: https://github.com/theseanchristopher/project4-helm-argo-gitops.git
-              targetRevision: project4-gitops
-              path: charts/app
-              helm:
-                releaseName: project5-prod
-                parameters:
-                  - name: image.repository
-                    value: 349821334974.dkr.ecr.us-east-1.amazonaws.com/project1-nginx
-                  - name: image.tag
-                    value: cfddcc0d4c2a5798f529485c3b1cc575a82a791c
-                  - name: replicaCount
-                    value: "1"
-            destination:
-              server: https://kubernetes.default.svc
-              namespace: project5-prod
-            syncPolicy:
-              syncOptions:
-                - CreateNamespace=true
+  template:
+    metadata:
+      name: project5-prod
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/theseanchristopher/project4-helm-argo-gitops.git
+        targetRevision: project4-gitops
+        path: charts/app
+        helm:
+          releaseName: project5-prod
+          parameters:
+            - name: image.repository
+              value: 349821334974.dkr.ecr.us-east-1.amazonaws.com/project1-nginx
+            - name: image.tag
+              value: cfddcc0d4c2a5798f529485c3b1cc575a82a791c
+            - name: replicaCount
+              value: "1"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: project5-prod
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
 
