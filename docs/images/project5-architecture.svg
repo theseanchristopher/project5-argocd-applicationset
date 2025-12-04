@@ -1,7 +1,48 @@
-<!-- Placeholder SVG. The real architecture diagram will be designed later. -->
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400">
-  <rect x="10" y="10" width="780" height="380" fill="white" stroke="black"/>
-  <text x="50" y="100" font-family="Arial" font-size="20">
-    Project 5 – Architecture Diagram Placeholder
-  </text>
+<svg width="900" height="600" xmlns="http://www.w3.org/2000/svg">
+<rect width="100%" height="100%" fill="white"/>
+<text x="20" y="40" font-size="24" font-family="Arial">Project 5 — Argo CD ApplicationSet Architecture</text>
+
+<!-- CI -->
+<rect x="50" y="100" width="220" height="80" fill="#d0e6ff" stroke="#000"/>
+<text x="60" y="135" font-size="13" font-family="Arial">Project 1 CI</text>
+<text x="60" y="152" font-size="13" font-family="Arial">(project5-gitops branch)</text>
+
+<!-- GitOps Repo -->
+<rect x="320" y="100" width="260" height="80" fill="#ffe6cc" stroke="#000"/>
+<text x="330" y="135" font-size="13" font-family="Arial">Project 5 GitOps Repo</text>
+<text x="330" y="152" font-size="13" font-family="Arial">(ApplicationSet definitions)</text>
+
+<!-- Argo Meta App -->
+<rect x="620" y="100" width="230" height="80" fill="#e6ffd5" stroke="#000"/>
+<text x="630" y="135" font-size="13" font-family="Arial">Argo CD Application</text>
+<text x="630" y="152" font-size="13" font-family="Arial">project5-applicationsets-app</text>
+
+<!-- AppSet Controller -->
+<rect x="320" y="260" width="260" height="80" fill="#fff2cc" stroke="#000"/>
+<text x="335" y="295" font-size="13" font-family="Arial">Argo CD ApplicationSet Controller</text>
+
+<!-- Dev App -->
+<rect x="120" y="420" width="240" height="80" fill="#f0e6ff" stroke="#000"/>
+<text x="140" y="452" font-size="13" font-family="Arial">project5-dev Application</text>
+<text x="140" y="470" font-size="13" font-family="Arial">(auto-sync)</text>
+
+<!-- Prod App -->
+<rect x="520" y="420" width="240" height="80" fill="#f0e6ff" stroke="#000"/>
+<text x="540" y="452" font-size="13" font-family="Arial">project5-prod Application</text>
+<text x="540" y="470" font-size="13" font-family="Arial">(manual sync)</text>
+
+<!-- Arrows -->
+<defs>
+<marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+<path d="M0,0 L0,6 L6,3 z" fill="#000"/>
+</marker>
+</defs>
+
+<line x1="270" y1="140" x2="320" y2="140" stroke="black" marker-end="url(#arrow)"/>
+<line x1="580" y1="140" x2="620" y2="140" stroke="black" marker-end="url(#arrow)"/>
+<line x1="750" y1="180" x2="750" y2="260" stroke="black" marker-end="url(#arrow)"/>
+<line x1="450" y1="180" x2="450" y2="260" stroke="black" marker-end="url(#arrow)"/>
+<line x1="450" y1="340" x2="240" y2="420" stroke="black" marker-end="url(#arrow)"/>
+<line x1="450" y1="340" x2="640" y2="420" stroke="black" marker-end="url(#arrow)"/>
+
 </svg>
