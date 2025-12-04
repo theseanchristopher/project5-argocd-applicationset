@@ -29,6 +29,8 @@ spec:
               value: 349821334974.dkr.ecr.us-east-1.amazonaws.com/project1-nginx
             - name: image.tag
               value: cfddcc0d4c2a5798f529485c3b1cc575a82a791c 
+            - name: replicaCount
+              value: 1 
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{namespace}}"

@@ -1,0 +1,4 @@
+ kubectl scale deployment.apps/project4-app-prod -n project3-prod --replicas=0
+ kubectl scale deploy nginx-deployment -n project3-dev --replicas=0
+ kubectl scale deploy nginx-deployment -n project3-prod --replicas=0
+ kubectl scale deploy project4-app-prod -n project3-prod --replicas=0
