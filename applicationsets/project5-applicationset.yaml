@@ -17,7 +17,9 @@ spec:
     spec:
       project: default
       source:
-        repoURL: git@github.com:theseanchristopher/project4-helm-argo-gitops.git
+        # SSH access to the repo is not configured.
+        #repoURL: git@github.com:theseanchristopher/project4-helm-argo-gitops.git
+        repoURL: https://github.com:theseanchristopher/project4-helm-argo-gitops.git
         targetRevision: project4-gitops
         path: charts/app
         helm:
