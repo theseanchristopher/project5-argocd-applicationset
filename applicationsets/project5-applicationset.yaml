@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: project5-environments
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - name: dev
+            namespace: project5-dev
+          - name: prod
+            namespace: project5-prod
+  template:
+    metadata:
+      name: project5-{{name}}
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:theseanchristopher/project4-helm-argo-gitops.git
+        targetRevision: project4-gitops
+        path: charts/app
+        helm:
+          releaseName: project5-{{name}}
+          # Optional: basic env-specific overrides inline
+          # parameters:
+          #   - name: env.name
+          #     value: "{{name}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+      # NOTE:
+      # We will control dev auto-sync vs prod manual-sync from the Argo CD UI.
+      # By default, Applications created by this template will be manual sync.
