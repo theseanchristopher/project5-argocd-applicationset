@@ -29,6 +29,9 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{namespace}}"
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
       # NOTE:
       # We will control dev auto-sync vs prod manual-sync from the Argo CD UI.
       # By default, Applications created by this template will be manual sync.
