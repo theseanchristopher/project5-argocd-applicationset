@@ -24,7 +24,7 @@ spec:
             - name: image.repository
               value: 349821334974.dkr.ecr.us-east-1.amazonaws.com/project1-nginx
             - name: image.tag
-              value: cfddcc0d4c2a5798f529485c3b1cc575a82a791c
+              value: 0e3cfa482949379f8637f0b5ae9a19fa0566c3ab
             - name: replicaCount
               value: "1"
       destination:
@@ -72,4 +72,3 @@ spec:
       syncPolicy:
         syncOptions:
           - CreateNamespace=true
-
