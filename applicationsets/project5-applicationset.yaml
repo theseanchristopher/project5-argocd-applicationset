@@ -4,21 +4,33 @@ metadata:
   name: project5-environments
   namespace: argocd
 spec:
-  # Two generators:
-  # - one for dev (with auto-sync)
-  # - one for prod (manual sync)
   generators:
+    # ---------- DEV (auto-sync) ----------
     - list:
         elements:
           - name: dev
             namespace: project5-dev
-        # This template overrides/patches the base template *only* for dev.
         template:
-          metadata: {}
+          metadata:
+            name: project5-dev
           spec:
             project: default
-            destination: {}
-            source: {}
+            source:
+              repoURL: https://github.com/theseanchristopher/project4-helm-argo-gitops.git
+              targetRevision: project4-gitops
+              path: charts/app
+              helm:
+                releaseName: project5-dev
+                parameters:
+                  - name: image.repository
+                    value: 349821334974.dkr.ecr.us-east-1.amazonaws.com/project1-nginx
+                  - name: image.tag
+                    value: cfddcc0d4c2a5798f529485c3b1cc575a82a791c
+                  - name: replicaCount
+                    value: "1"
+            destination:
+              server: https://kubernetes.default.svc
+              namespace: project5-dev
             syncPolicy:
               automated:
                 prune: true
@@ -26,49 +38,33 @@ spec:
               syncOptions:
                 - CreateNamespace=true
 
+    # ---------- PROD (manual sync) ----------
     - list:
         elements:
           - name: prod
             namespace: project5-prod
-        # This template overrides/patches the base template *only* for prod.
-        # No "automated" block here → prod stays manual.
         template:
-          metadata: {}
+          metadata:
+            name: project5-prod
           spec:
             project: default
-            destination: {}
-            source: {}
+            source:
+              repoURL: https://github.com/theseanchristopher/project4-helm-argo-gitops.git
+              targetRevision: project4-gitops
+              path: charts/app
+              helm:
+                releaseName: project5-prod
+                parameters:
+                  - name: image.repository
+                    value: 349821334974.dkr.ecr.us-east-1.amazonaws.com/project1-nginx
+                  - name: image.tag
+                    value: cfddcc0d4c2a5798f529485c3b1cc575a82a791c
+                  - name: replicaCount
+                    value: "1"
+            destination:
+              server: https://kubernetes.default.svc
+              namespace: project5-prod
             syncPolicy:
               syncOptions:
                 - CreateNamespace=true
 
-  # Base template shared by BOTH dev and prod.
-  template:
-    metadata:
-      # Generated Applications will be called:
-      #   project5-dev
-      #   project5-prod
-      name: project5-{{name}}
-    spec:
-      project: default
-      source:
-        # Project 4 Helm repo
-        repoURL: https://github.com/theseanchristopher/project4-helm-argo-gitops.git
-        targetRevision: project4-gitops
-        path: charts/app
-        helm:
-          releaseName: project5-{{name}}
-          parameters:
-            - name: image.repository
-              value: 349821334974.dkr.ecr.us-east-1.amazonaws.com/project1-nginx
-            - name: image.tag
-              value: cfddcc0d4c2a5798f529485c3b1cc575a82a791c
-            - name: replicaCount
-              value: "1"
-      destination:
-        server: https://kubernetes.default.svc
-        namespace: "{{namespace}}"
-      # Default sync options (both envs get CreateNamespace=true; dev overrides further above)
-      syncPolicy:
-        syncOptions:
-          - CreateNamespace=true
