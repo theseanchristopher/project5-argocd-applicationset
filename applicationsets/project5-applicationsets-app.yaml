@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: project5-applicationsets-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/theseanchristopher/project5-argocd-applicationset.git
+    targetRevision: main
+    path: applicationsets
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
