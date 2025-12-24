@@ -1,44 +1,26 @@
-# Project 5 Architecture
+# Architecture
 
 <img src="images/project5-architecture.svg" width="750">
 
-This document explains the architecture of Project 5, which implements an Argo CD **ApplicationSet**-based GitOps model for managing multiple environments (dev and prod).
+## 1. Architecture Overview
 
-Project 5 builds on the earlier projects by:
+This repository defines an Argo CD ApplicationSet-based GitOps architecture for managing multiple Kubernetes environments from a single declarative configuration source.
 
-- Using **Project 1** as the CI system (build + push + GitOps update)
-- Using **Project 4** as the **Helm chart source** for the application
-- Introducing **Project 5** as the **GitOps configuration repo** for ApplicationSets
-- Having **Argo CD** pull configuration and manage rollouts in EKS
+## 2. Core Components
 
-## High-Level Flow
+- **GitOps Configuration Repository**: Stores ApplicationSet and meta-application definitions.
+- **Helm Chart Repository**: Provides application manifests.
+- **Argo CD**: Reconciles desired state and enforces synchronization policies.
+- **ApplicationSet Controller**: Generates environment-specific Argo CD Applications.
 
-1. Developer commits code to the Project 1 repository (branch `project5-gitops`).
-2. GitHub Actions builds the Docker image and pushes it to ECR using the commit SHA as the image tag.
-3. CI updates the `image.tag` value inside the **Project 5 ApplicationSet** (dev only).
-4. Argo CD meta-application (`project5-applicationsets-app`) syncs the updated ApplicationSet.
-5. The ApplicationSet controller updates the `project5-dev` Application.
-6. Argo CD auto-syncs dev and rolls out the new image.
-7. Prod promotion is controlled via a manual sync of `project5-prod`.
+## 3. Reconciliation Model
 
-## Components
+Argo CD continuously reconciles generated Applications against the desired state stored in Git. Environment behavior is governed by sync policy rather than by divergent configuration sources.
 
-Key components:
+## 4. Control Flow
 
-- **Project 1 CI:** Builds and tags the image, updates GitOps config.
-- **Project 4 Helm Chart:** Provides the Kubernetes manifests as a Helm chart.
-- **Project 5 GitOps Repo:** Stores Argo CD ApplicationSet and meta-application definitions.
-- **Argo CD ApplicationSet Controller:** Generates `project5-dev` and `project5-prod` Applications.
-- **Argo CD Applications:** Manage synchronization and health of dev/prod namespaces.
+Developer → CI → GitOps configuration update → Argo CD meta-application → ApplicationSet controller → Argo CD Applications → Kubernetes namespaces
 
-## Diagram (Text)
+## 5. Environment Boundaries
 
-```
-Developer → Project 1 Repo → GitHub Actions CI
-      → ECR Image
-      → Project 5 GitOps Repo (ApplicationSet image.tag update)
-      → Argo CD (project5-applicationsets-app)
-      → ApplicationSet Controller
-      → Argo CD Applications (project5-dev / project5-prod)
-      → EKS Namespaces (project5-dev / project5-prod)
-```
+Dev and prod environments are isolated by namespace and Argo CD sync policy while sharing a common application definition.

@@ -1,27 +1,19 @@
-# Dev/Prod Lifecycle
+# Dev / Prod Lifecycle
 
-Project 5 models a realistic lifecycle for dev and prod environments using ApplicationSets and Argo CD.
+## 1. Environment Separation
 
-## Dev Environment
+This repository enforces a clear separation between development and production environments through Argo CD sync policy.
 
-- Auto-sync enabled
-- 1 replica (resource efficient)
-- Receives new images on every successful CI run
-- Ideal for fast iteration and validation
+## 2. Dev Environment
 
-## Prod Environment
+- Automatic reconciliation
+- Continuous delivery behavior
 
-- Manual sync (no automatic rollout)
-- Same Helm chart and ApplicationSet structure as dev
-- Updated by syncing `project5-prod` in the Argo CD UI
-- Represents a stable environment with explicit promotion
+## 3. Prod Environment
 
-## Promotion Model
+- Manual reconciliation
+- Explicit promotion required
 
-The promotion model is:
+## 4. Promotion Model
 
-1. CI updates dev automatically.
-2. Dev is tested and validated.
-3. When ready, prod is updated by manually syncing the `project5-prod` Application.
-
-This pattern is common in production GitOps setups.
+Both environments share identical configuration structures and application artifacts.

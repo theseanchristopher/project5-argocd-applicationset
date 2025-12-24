@@ -1,24 +1,16 @@
-# Reference Documentation
+# References
 
-Official links for tools and components used in Project 5.
+## 1. Kubernetes
+https://kubernetes.io/docs/
 
-## Kubernetes
-- https://kubernetes.io/docs/
+## 2. Helm
+https://helm.sh/docs/
 
-## Helm
-- https://helm.sh/docs/
+## 3. Argo CD
+https://argo-cd.readthedocs.io/en/stable/
 
-## Argo CD
-- https://argo-cd.readthedocs.io/en/stable/
+## 4. Argo CD ApplicationSet
+https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/
 
-## Argo CD ApplicationSet
-- https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/
-
-## AWS EKS
-- https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html
-
-## AWS Load Balancer Controller
-- https://kubernetes-sigs.github.io/aws-load-balancer-controller/
-
-## GitHub Actions
-- https://docs.github.com/en/actions
+## 5. AWS EKS
+https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html

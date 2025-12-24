@@ -1,42 +1,26 @@
 # ApplicationSet Design
 
-This document describes how the ApplicationSet in Project 5 is designed to generate environment-specific Argo CD Applications for dev and prod.
+## 1. Design Objective
 
-## Generators
+The ApplicationSet defines a single declarative source for generating multiple environment-specific Argo CD Applications.
 
-Project 5 uses a **list generator** to define environment entries such as:
+## 2. Generator Model
 
-- `name: dev`, `namespace: project5-dev`
-- `name: prod`, `namespace: project5-prod`
+A list generator defines environment entries, including name and target namespace, enabling controlled and predictable Application generation.
 
-This keeps environment configuration declarative and easy to extend.
+## 3. Template Model
 
-## Template
+The Application template specifies:
 
-The ApplicationSet `template` defines the common Application spec, including:
+- Helm chart repository and revision
+- Chart path
+- Helm parameters for image and replica configuration
 
-- `spec.source.repoURL` → Project 4 Helm Git repo  
-- `spec.source.targetRevision` → `project4-gitops` branch  
-- `spec.source.path` → `charts/app`  
-- `spec.source.helm.parameters`:
-  - `image.repository`
-  - `image.tag`
-  - `replicaCount`
+This enforces separation between application packaging and deployment configuration.
 
-These parameters allow CI to update only the tag while keeping chart logic in Project 4.
-
-## Output Applications
+## 4. Generated Applications
 
 The ApplicationSet controller produces:
 
-- **project5-dev**
-  - Auto-sync enabled
-  - Uses latest `image.tag` from CI updates
-  - Deploys to `project5-dev` namespace
-
-- **project5-prod**
-  - Manual sync (promotion only when operator approves)
-  - Uses the same chart and parameter structure
-  - Deploys to `project5-prod` namespace
-
-This structure demonstrates a scalable, pattern-driven approach to managing multiple environments.
+- A dev Application with automated reconciliation
+- A prod Application with manual reconciliation

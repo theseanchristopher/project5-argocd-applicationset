@@ -1,30 +1,29 @@
-# Project 5 — Argo CD ApplicationSet GitOps Deployment
+# Project 5 — Argo CD ApplicationSet GitOps Configuration
 
 ![Project 5 Architecture](docs/images/project5-architecture.svg)
 
-This project extends the GitOps deployment model from earlier projects by introducing **Argo CD ApplicationSets**, enabling automated multi‑environment deployments (dev and prod) from a single declarative configuration source.
+---
 
-Project 5 integrates:
+## 1. Overview
 
-- **Project 1** → CI builds & updates image tags  
-- **Project 4** → Helm chart source for the application  
-- **Project 5** → GitOps configuration repo using Argo CD ApplicationSets  
-- **Argo CD** → Automated pull‑based deployments  
+This repository defines an Argo CD ApplicationSet–based GitOps configuration that generates and manages environment-specific Argo CD Applications for dev and prod workloads.
 
-This project demonstrates real‑world GitOps patterns used in production Kubernetes platforms.
+It functions exclusively as a **GitOps configuration source**. Build, test, and image publication responsibilities are handled upstream. Argo CD continuously reconciles the desired state defined in this repository against the target Kubernetes cluster.
 
 ---
 
-## 1. Repository Structure
+## 2. Repository Structure
 
 ```
 project5-argocd-applicationset/
 │
 ├── applications/
-│   └── project5-applicationsets-app.yaml      # Argo CD “meta-application”
+│   └── project5-applicationsets-app.yaml
+│       # Argo CD meta-application managing ApplicationSets
 │
 ├── applicationsets/
-│   └── project5-applicationset.yaml           # ApplicationSets (dev + prod)
+│   └── project5-applicationset.yaml
+│       # ApplicationSet generating dev and prod Applications
 │
 ├── docs/
 │   ├── architecture.md
@@ -38,183 +37,107 @@ project5-argocd-applicationset/
 │
 └── environments/
     ├── dev/
-    │   └── values-dev.yaml                    # Placeholder (not wired yet)
+    │   └── values-dev.yaml
     └── prod/
-        └── values-prod.yaml                   # Placeholder (not wired yet)
+        └── values-prod.yaml
 ```
 
-For more detailed architectural explanation, see  
-**docs/architecture.md**
+The `environments/` directory is reserved for future value-file expansion and is not currently wired into the ApplicationSet.
 
 ---
 
-## 2. Deployment Flow (High-Level)
+## 3. Architecture Summary
 
-1. A developer pushes code to **Project 1** on the `project5-gitops` branch.  
-2. GitHub Actions builds the Docker image and pushes it to Amazon ECR.  
-3. The pipeline checks out this repository (Project 5) and updates the **dev ApplicationSet image tag**.  
-4. Argo CD detects the change via the meta‑application (`project5-applicationsets-app`) and **auto-syncs** the ApplicationSet.  
-5. The ApplicationSet controller regenerates:
-   - `project5-dev` (auto-sync enabled)
-   - `project5-prod` (manual sync)
-6. Argo CD deploys the dev environment automatically.  
-7. Production changes are applied only after a **manual sync** in the Argo CD UI.
+- A single ApplicationSet definition generates distinct Argo CD Applications for dev and prod.
+- Each generated Application deploys the same Helm chart sourced from the Project 4 repository.
+- Environment separation is enforced through namespaces and Argo CD sync policies.
+- Argo CD continuously reconciles state based on Git changes.
 
-This creates a clear and predictable workflow:
-- **Continuous deployment** to dev  
-- **Controlled promotion** to prod  
+Detailed architecture is documented in **docs/architecture.md**.
 
 ---
 
-## 3. ApplicationSet Overview
+## 4. ApplicationSet Model
 
-The core of this repository is the **ApplicationSet** located in:
+The ApplicationSet is defined in:
 
 ```
 applicationsets/project5-applicationset.yaml
 ```
 
-It contains two ApplicationSets:
+Characteristics:
 
-- **project5-dev**  
-  - Auto-sync enabled  
-  - Replica count = 1  
-  - Updates automatically when CI updates `image.tag`
+- Uses a list generator to define environment entries
+- Produces one Argo CD Application per environment
+- Shares a common Application template
+- Injects environment-specific parameters declaratively
 
-- **project5-prod**  
-  - Manual sync (approval required)  
-  - Same chart and structure as dev  
-  - Replica count = 1  
+Generated Applications:
 
-### Key Components
+- **project5-dev**
+  - Automated sync enabled
+  - Reconciles immediately on Git changes
 
-| Field | Purpose |
-|-------|---------|
-| `generators.list` | Defines the list of environments (dev, prod) |
-| `template.metadata.name` | Sets the generated Argo CD Application name |
-| `template.spec.source` | Points to Project 4 Helm chart |
-| `template.spec.source.helm.parameters` | Injects image.tag, replicaCount, etc. |
-| `syncPolicy` | Dev = automated, Prod = manual |
-| `syncOptions.CreateNamespace=true` | Automatically creates namespaces |
-
-Each generated Application deploys the Helm chart at:
-
-```
-repoURL: https://github.com/theseanchristopher/project4-helm-argo-gitops.git
-targetRevision: project4-gitops
-path: charts/app
-```
+- **project5-prod**
+  - Manual sync required
+  - Reconciles only after explicit promotion
 
 ---
 
-## 4. Environment Differences
+## 5. Argo CD Configuration
 
-### **Dev Environment**
-- Auto-sync enabled  
-- 1 replica  
-- Immediate updates when `image.tag` changes  
-- URL (example):  
-  ```
-  https://project5-dev.seanxtopher.com
-  ```
-
-### **Prod Environment**
-- Manual sync  
-- 1 replica (can be scaled in future)  
-- Used for controlled promotion  
-- URL (example):  
-  ```
-  https://project5-prod.seanxtopher.com
-  ```
-
----
-
-## 5. Argo CD Applications
-
-Project 5 uses a **meta-application** to manage its ApplicationSets.
-
-### `project5-applicationsets-app`
-Located in:
+A meta-application manages all ApplicationSet resources:
 
 ```
 applications/project5-applicationsets-app.yaml
 ```
 
-Purpose:
-- Watches this repository (`path: applicationsets`)
-- Automatically applies ApplicationSets when changes occur
-- Ensures ApplicationSets are the single source of truth for dev & prod deployments
+This Application:
 
-### `project5-dev`
-- Generated by ApplicationSet  
-- Auto-sync enabled  
-- Deploys application via Project 4 Helm chart  
-- Receives new images on every successful CI run  
+- Watches the `applicationsets/` directory
+- Applies ApplicationSet changes automatically
+- Enforces prune and self-heal behavior
 
-### `project5-prod`
-- Generated by ApplicationSet  
-- Manual sync  
-- Used to demonstrate gated promotion  
+Argo CD configuration details are documented in **docs/argo-cd-configuration.md**.
 
 ---
 
-## 6. CI/CD Integration (From Project 1)
+## 6. CI / GitOps Boundary
 
-The GitHub Actions workflow in Project 1:
+This repository does **not** define CI pipelines.
 
-1. Builds the Docker image  
-2. Pushes to ECR  
-3. Updates this repo (`project5-argocd-applicationset`) by modifying:  
-   ```
-   applicationsets/project5-applicationset.yaml
-   ```
-   Specifically the `image.tag` value for the **dev** environment.
+Image tags are updated upstream by an external CI system. Once committed, Argo CD detects the change and reconciles the generated Applications accordingly.
 
-Argo CD then:
-
-- Detects the commit  
-- Syncs the ApplicationSet  
-- Deploys to `project5-dev`  
-
-Production tagging requires **manual promotion**.
+The CI/CD integration contract is documented in **docs/cicd-integration.md**.
 
 ---
 
-## 7. Dev → Prod Promotion Workflow
+## 7. Environment Lifecycle
 
-1. Developer pushes changes → CI builds image → Dev updates automatically  
-2. Review dev environment in Argo CD or via app URL  
-3. Sync `project5-prod` in Argo CD to promote  
-4. Prod deploys the SAME Helm chart + parameters as dev, but using the updated tag  
+- **Dev**
+  - Automatic reconciliation
+  - Continuous delivery behavior
 
-This mirrors real enterprise GitOps promotion models.
+- **Prod**
+  - Manual reconciliation
+  - Explicit promotion required
 
----
+This separation enforces controlled promotion while maintaining configuration parity.
 
-## 8. Why ApplicationSets?
-
-ApplicationSets enable:
-
-- Consistent, scalable multi-environment GitOps  
-- Reduced duplication compared to separate Argo apps  
-- Centralized environment definitions  
-- Declarative environment management  
-- CI-driven dynamic updates (e.g., `image.tag`)  
-
-This pattern is used by platform engineering teams to manage dozens—or hundreds—of environment variations.
+Further details are documented in **docs/dev-prod-lifecycle.md**.
 
 ---
 
-## 9. Namespace Strategy
+## 8. Namespace Strategy
 
-Project 5 deploys to:
+Applications deploy into isolated namespaces:
 
 ```
 project5-dev
 project5-prod
 ```
 
-Namespaces are automatically created via:
+Namespaces are created automatically using:
 
 ```
 syncOptions:
@@ -225,34 +148,6 @@ This ensures environments are reproducible and self-contained.
 
 ---
 
-## 10. Why ApplicationSets Matter
+## 9. References
 
-ApplicationSets are a core capability for scaling GitOps across multiple environments.  
-They enable:
-
-- Declarative multi-environment management  
-- Reduction of YAML duplication  
-- Automated generation of Argo CD Applications  
-- Consistent structure across dev, staging, and production  
-- CI-driven updates without modifying Helm charts  
-- A clean separation of CI (image building) and CD (Argo CD pulling state)
-
-Project 5 demonstrates how platform engineering teams manage tens or hundreds of deployments using a single source-of-truth pattern.
-
----
-
-## 11. Summary
-
-Project 5 provides:
-
-- A complete **ApplicationSet-based GitOps workflow**
-- Automated multi-environment deployments
-- CI-driven updates via Project 1
-- Unified configuration for dev and prod
-- Enterprise-ready Argo CD patterns
-- A clean dev → prod promotion lifecycle
-
-This project demonstrates how Argo CD ApplicationSets can be used to scale GitOps across multiple environments in real-world Kubernetes platforms.
-
-**Note:** Screenshots of the Argo CD UI and ApplicationSet behavior may be added in the future to complement the existing documentation.
-
+Official documentation for all components is listed in **docs/references.md**.

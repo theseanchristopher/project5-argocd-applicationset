@@ -1,47 +1,25 @@
 # Argo CD Configuration
 
-This document describes the Argo CD configuration used in Project 5.
+## 1. Configuration Scope
 
-## Meta-Application
+Argo CD manages both ApplicationSets and generated Applications using GitOps principles.
 
-Project 5 defines a **meta-application** in:
+## 2. Meta-Application
 
-```
-applications/project5-applicationsets-app.yaml
-```
+A dedicated Argo CD Application manages all ApplicationSet resources and enforces:
 
-This Application:
+- Automated synchronization
+- Prune behavior
+- Self-healing
 
-- Points to this repo (`project5-argocd-applicationset`)
-- Watches the `applicationsets/` directory
-- Auto-syncs changes to the ApplicationSet definitions
-- Enables prune + self-heal
+## 3. Generated Applications
 
-By managing the ApplicationSet through Argo CD, the configuration itself is under GitOps control.
+Each generated Application:
 
-## Generated Applications
+- Targets an isolated namespace
+- Deploys the same Helm chart
+- Applies environment-specific sync policies
 
-The ApplicationSet generates two Applications:
+## 4. Sync Policy Model
 
-- `project5-dev` (auto-sync)
-- `project5-prod` (manual sync)
-
-Each Application:
-
-- Uses the Project 4 Helm chart (`charts/app`)
-- Deploys to its own namespace (`project5-dev` or `project5-prod`)
-- Includes Argo CD sync status and health checking
-
-## Sync Policies
-
-Dev:
-
-- Automated sync
-- Immediate rollout on ApplicationSet changes
-
-Prod:
-
-- Manual sync
-- Requires explicit promotion action in the Argo CD UI
-
-These policies model a realistic separation between continuous delivery to dev and controlled promotion to production.
+Dev reconciles automatically. Production reconciliation requires explicit promotion.
